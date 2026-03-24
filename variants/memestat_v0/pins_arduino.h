@@ -40,11 +40,11 @@
 //#define WIRE_HOWMANY   (2u)
 
 // Real time clock
-#define RTC_SDA=12
-#define RTC_SCL=13
+#define RTC_SDA     (12u)
+#define RTC_SCL     (13u)
 
 //multiplexer
-#define MUX_ENABLE=3
-#define SWITCH_ENABLE=2
+#define MUX_ENABLE  (3u)
+#define SWITCH_ENABLE (2u)
 
 #include "../generic/common.h"
