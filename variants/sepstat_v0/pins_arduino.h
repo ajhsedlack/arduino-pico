@@ -11,11 +11,18 @@
 #define PIN_LED        (64u)
 
 // Serial
-#define PIN_SERIAL1_TX (0u)
-#define PIN_SERIAL1_RX (1u)
+//#define PIN_SERIAL1_TX (0u)
+//#define PIN_SERIAL1_RX (1u)
+//SEPSTAT ONLY
+#define PIN_SERIAL1_TX (-1)
+#define PIN_SERIAL1_RX (-1)
 
-#define PIN_SERIAL2_TX (8u)
-#define PIN_SERIAL2_RX (9u)
+
+//#define PIN_SERIAL2_TX (8u)
+//#define PIN_SERIAL2_RX (9u)
+#define PIN_SERIAL2_TX (-1)
+#define PIN_SERIAL2_RX (-1)
+
 
 // SPI
 #define PIN_SPI0_MISO  (16u)
@@ -29,8 +36,11 @@
 #define PIN_SPI1_SS    (13u)
 
 // Wire
-#define PIN_WIRE0_SDA  (4u)
-#define PIN_WIRE0_SCL  (5u)
+//#define PIN_WIRE0_SDA  (4u)
+//#define PIN_WIRE0_SCL  (5u)
+//SEPSTAT ONLY
+#define PIN_WIRE0_SDA  (28u)
+#define PIN_WIRE0_SCL  (29u)
 
 #define PIN_WIRE1_SDA  (26u)
 #define PIN_WIRE1_SCL  (27u)
@@ -40,11 +50,15 @@
 //#define WIRE_HOWMANY   (2u)
 
 // Real time clock
-#define RTC_SDA     (12u)
-#define RTC_SCL     (13u)
+#define RTC_SDA     (28u)
+#define RTC_SCL     (29u)
 
 //multiplexer
-#define MUX_ENABLE  (2u)
+// legacy memestat mux
+#define MUX_ENABLE  (8u)
 #define SWITCH_ENABLE (3u)
+// sepstat only
+#define MUX_ENABLE2 (12u)
+
 
 #include "../generic/common.h"
