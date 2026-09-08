@@ -2,11 +2,45 @@
 
 #include <stdint.h>
 
+/* Pin counts follow the part. This file already branches on PICO_RP2350A below
+   to declare D30..D47 and to move A0..A7 to GPIO40..47 on the RP2350B; reporting
+   NUM_DIGITAL_PINS as 30 and NUM_ANALOG_INPUTS as 4 on that same board
+   contradicts the declarations a few lines down.
+
+   Guarded with #ifndef so a variant can still state its own counts -- a board
+   that breaks out fewer pins than the package has is the normal case. Before
+   this guard a variant's value was silently overridden here, with only a
+   redefinition warning to show for it. */
+#ifndef PINS_COUNT
+#if defined(PICO_RP2350) && !PICO_RP2350A // RP2350B
+#define PINS_COUNT          (48u)
+#else
 #define PINS_COUNT          (30u)
+#endif
+#endif
+
+#ifndef NUM_DIGITAL_PINS
+#if defined(PICO_RP2350) && !PICO_RP2350A // RP2350B
+#define NUM_DIGITAL_PINS    (48u)
+#else
 #define NUM_DIGITAL_PINS    (30u)
+#endif
+#endif
+
+#ifndef NUM_ANALOG_INPUTS
+#if defined(PICO_RP2350) && !PICO_RP2350A // RP2350B: A0..A7 on GPIO40..47
+#define NUM_ANALOG_INPUTS   (8u)
+#else
 #define NUM_ANALOG_INPUTS   (4u)
+#endif
+#endif
+
+#ifndef NUM_ANALOG_OUTPUTS
 #define NUM_ANALOG_OUTPUTS  (0u)
+#endif
+#ifndef ADC_RESOLUTION
 #define ADC_RESOLUTION      (12u)
+#endif
 #define WIRE_INTERFACES_COUNT (WIRE_HOWMANY)
 
 #ifdef PIN_LED
@@ -334,10 +368,18 @@ static const uint8_t A7 = (47u);
 #endif
 
 
+/* Only if the board actually breaks out SPI0. SPI.cpp already guards the SPI
+   object on PIN_SPI0_MISO, so a board without it had to invent four pin numbers
+   solely to satisfy these four aliases -- and on a fully-allocated package those
+   invented numbers necessarily land on live nets. The core does not use SS/MOSI/
+   MISO/SCK itself; only sketches and libraries do, and a board with no SPI0 has
+   nothing to point them at anyway. */
+#ifdef PIN_SPI0_SS
 static const uint8_t SS = PIN_SPI0_SS;
 static const uint8_t MOSI = PIN_SPI0_MOSI;
 static const uint8_t MISO = PIN_SPI0_MISO;
 static const uint8_t SCK = PIN_SPI0_SCK;
+#endif
 
 static const uint8_t SDA = PIN_WIRE0_SDA;
 static const uint8_t SCL = PIN_WIRE0_SCL;
