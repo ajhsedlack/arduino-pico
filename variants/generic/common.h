@@ -2,11 +2,45 @@
 
 #include <stdint.h>
 
+/* Pin counts follow the part. This file already branches on PICO_RP2350A below
+   to declare D30..D47 and to move A0..A7 to GPIO40..47 on the RP2350B; reporting
+   NUM_DIGITAL_PINS as 30 and NUM_ANALOG_INPUTS as 4 on that same board
+   contradicts the declarations a few lines down.
+
+   Guarded with #ifndef so a variant can still state its own counts -- a board
+   that breaks out fewer pins than the package has is the normal case. Before
+   this guard a variant's value was silently overridden here, with only a
+   redefinition warning to show for it. */
+#ifndef PINS_COUNT
+#if defined(PICO_RP2350) && !PICO_RP2350A // RP2350B
+#define PINS_COUNT          (48u)
+#else
 #define PINS_COUNT          (30u)
+#endif
+#endif
+
+#ifndef NUM_DIGITAL_PINS
+#if defined(PICO_RP2350) && !PICO_RP2350A // RP2350B
+#define NUM_DIGITAL_PINS    (48u)
+#else
 #define NUM_DIGITAL_PINS    (30u)
+#endif
+#endif
+
+#ifndef NUM_ANALOG_INPUTS
+#if defined(PICO_RP2350) && !PICO_RP2350A // RP2350B: A0..A7 on GPIO40..47
+#define NUM_ANALOG_INPUTS   (8u)
+#else
 #define NUM_ANALOG_INPUTS   (4u)
+#endif
+#endif
+
+#ifndef NUM_ANALOG_OUTPUTS
 #define NUM_ANALOG_OUTPUTS  (0u)
+#endif
+#ifndef ADC_RESOLUTION
 #define ADC_RESOLUTION      (12u)
+#endif
 #define WIRE_INTERFACES_COUNT (WIRE_HOWMANY)
 
 #ifdef PIN_LED
