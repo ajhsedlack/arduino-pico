@@ -368,10 +368,18 @@ static const uint8_t A7 = (47u);
 #endif
 
 
+/* Only if the board actually breaks out SPI0. SPI.cpp already guards the SPI
+   object on PIN_SPI0_MISO, so a board without it had to invent four pin numbers
+   solely to satisfy these four aliases -- and on a fully-allocated package those
+   invented numbers necessarily land on live nets. The core does not use SS/MOSI/
+   MISO/SCK itself; only sketches and libraries do, and a board with no SPI0 has
+   nothing to point them at anyway. */
+#ifdef PIN_SPI0_SS
 static const uint8_t SS = PIN_SPI0_SS;
 static const uint8_t MOSI = PIN_SPI0_MOSI;
 static const uint8_t MISO = PIN_SPI0_MISO;
 static const uint8_t SCK = PIN_SPI0_SCK;
+#endif
 
 static const uint8_t SDA = PIN_WIRE0_SDA;
 static const uint8_t SCL = PIN_WIRE0_SCL;
