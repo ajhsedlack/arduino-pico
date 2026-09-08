@@ -69,22 +69,27 @@
 #define PIN_SPI1_SCK        (30u)
 #define PIN_SPI1_SS         (29u)
 
-/* I2C0 — PCF85063A RTC.
- * ⚠ Do NOT define RTC_SDA / RTC_SCL here. The RTC implementations do
- * `#ifdef RTC_SDA` and SILENTLY REPORT THE RTC ABSENT if it is missing, so the
- * pin source must be board_pins.h, not this fork
- * (pure-pico-migration-2026-08-26.md §2.4). */
-#define PIN_WIRE0_SDA       (2u)
-#define PIN_WIRE0_SCL       (3u)
-
-/* I2C1 — NOT USED. Required to LINK, not merely to compile: Wire.cpp guards the
- * `TwoWire Wire1(...)` instantiation on PIN_WIRE1_*, but its IRQ trampoline
- * `_handler1()` references Wire1 unconditionally, so omitting the group gives
- * `undefined reference to Wire1` at link time rather than a clear diagnostic.
+/* I2C0 — NOT USED BY THIS BOARD, so NOPIN. variants/generic/common.h aliases
+ * SDA/SCL to PIN_WIRE0_* unconditionally, so the group has to exist.
  *
- * ⚠ NOPIN, not "a free pair". This previously read GPIO4/5, which are D4/D5 on
- * J8 pads 2/3 -- mux control outputs driven by this board, not spare pins. */
-#define PIN_WIRE1_SDA       (0xffu)   /* NOPIN */
-#define PIN_WIRE1_SCL       (0xffu)   /* NOPIN */
+ * ⚠ This previously read 2/3 -- the real bus pins -- which is wrong twice over.
+ * GPIO2/3 are i2c1 pins (pin%4 == 2/3), so `Wire` cannot reach them at all:
+ * TwoWire::setSDA() PANICS on an illegal pin rather than returning false. The
+ * bus lives on Wire1 below. */
+#define PIN_WIRE0_SDA       (0xffu)   /* NOPIN */
+#define PIN_WIRE0_SCL       (0xffu)   /* NOPIN */
+
+/* I2C1 — THE BOARD BUS. PCF85063ATL RTC (U11 @0x51), MAX17048 gauge (U15 @0x36)
+ * and the Qwiic header J7 all share it; 2K pull-ups R41/R43. GPIO2 = SDA
+ * (U7 pad 79), GPIO3 = SCL (U7 pad 80), and both are i2c1 pins.
+ *
+ * ⚠ RTC_SDA / RTC_SCL are deliberately NOT defined here, unlike memestat_v0 and
+ * sepstat_v0 which do define them. They live in the firmware's board_pins.h,
+ * which rtc_impl.cpp now reaches via board_i2c.h. Keeping the board's pin facts
+ * in the firmware repo is the point; note the RTC impls do an ifdef on RTC_SDA
+ * and SILENTLY report the RTC absent when it resolves to nothing, so if you move
+ * them, move them somewhere rtc_impl.cpp can actually see. */
+#define PIN_WIRE1_SDA       (2u)
+#define PIN_WIRE1_SCL       (3u)
 
 #include "../generic/common.h"
