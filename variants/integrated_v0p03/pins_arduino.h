@@ -31,40 +31,34 @@
 /* PSRAM chip select — /CS_PSRAM via R2 0R. */
 #define RP2350_PSRAM_CS     (0u)
 
-/* SERIAL — NOT USED BY THIS BOARD. The console is USB CDC; V0p03 has no UART
- * header. cores/rp2040/SerialUART.cpp references PIN_SERIAL1_* and PIN_SERIAL2_*
- * unconditionally, so they must exist to link.
+/* SERIAL — NOT USED BY THIS BOARD. The console is USB CDC (`Serial`), which is
+ * independent of these; V0p03 has no UART header. cores/rp2040/SerialUART.cpp
+ * instantiates Serial1/Serial2 unconditionally (:542/:548) and its IRQ handler
+ * references them, so PIN_SERIAL1_* / PIN_SERIAL2_* must exist to link.
  *
- * Pointed at free pins (44-47) for the same reason as SPI0 below: every low GPIO
- * on this board carries a live signal, and aliasing an unused peripheral onto one
- * turns an accidental Serial1.begin() into a conflict on the DAC or the mux.
- * ⚠ These are PLACEHOLDERS, not a validated UART mapping — if a UART is ever
- * wanted here, pick the pins from the RP2350B FUNCSEL table rather than trusting
- * these. */
-#define PIN_SERIAL1_TX      (44u)
-#define PIN_SERIAL1_RX      (45u)
-#define PIN_SERIAL2_TX      (46u)
-#define PIN_SERIAL2_RX      (47u)
+ * ⚠ THEY MUST NOT NAME A REAL PIN. There is no free GPIO on this board -- all 48
+ * carry a net -- so any "spare" pin picked here is a live one. This previously
+ * read 44/45/46/47, which are WRL_ON / WRL_CLK / WRL_DAT / WRL_~CS: an
+ * accidental Serial1.begin() would have driven the CYW43 radio.
+ *
+ * 0xff is NOPIN. Spelled as the literal because Arduino.h includes this file at
+ * :32 and does not define NOPIN until :174. sepstat_v0 does the same thing with
+ * (-1); the value here is explicit so it cannot depend on pin_size_t's width. */
+#define PIN_SERIAL1_TX      (0xffu)   /* NOPIN */
+#define PIN_SERIAL1_RX      (0xffu)   /* NOPIN */
+#define PIN_SERIAL2_TX      (0xffu)   /* NOPIN */
+#define PIN_SERIAL2_RX      (0xffu)   /* NOPIN */
 
-/* SPI0 — NOT USED BY THIS BOARD, but variants/generic/common.h references
- * PIN_SPI0_MISO/SCK/SS/MOSI unconditionally (`static const uint8_t MISO = ...`),
- * so the group has to exist or the variant will not compile.
+/* SPI0 — DELIBERATELY NOT DEFINED. This board has no SPI0: the AD5940 is on
+ * SPI1 and nothing else uses the peripheral. SPI.cpp guards the SPI object on
+ * PIN_SPI0_MISO, and variants/generic/common.h now guards its SS/MOSI/MISO/SCK
+ * aliases on PIN_SPI0_SS, so omitting the group is legal and leaves no object
+ * that could be begun by accident.
  *
- * Pointed at GPIO40-43 deliberately: that is a REAL RP2350B SPI0 function group
- * (the SPI pin roles repeat every 8 GPIOs — 40=RX, 41=CSn, 42=SCK, 43=TX), and
- * those pins are unused on V0p03. Do NOT repoint these at pins the board already
- * drives: GPIO0 PSRAM_CS, 1 RTC ~INT, 2/3 I2C0, 6-19 R-2R DAC, 20 RTC CLKOUT,
- * 21-24 AD5940 GPIO2..5, 25 LED, 26 AD5940 INT, 27-30 SPI1/AD5940, 31 /AD_RST,
- * 32-39 mux. Aliasing SPI0 onto any of those turns an accidental SPI.begin()
- * into a pin conflict on a live signal.
- *
- * ⚠ Whether GPIO40-43 are broken out on the PCB is irrelevant here — nothing on
- * this board begins SPI0. The AD5940 runs bit-bang today and would use SPI1 if
- * hardware SPI is enabled later (handoff §4). */
-#define PIN_SPI0_MISO       (40u)
-#define PIN_SPI0_SS         (41u)
-#define PIN_SPI0_SCK        (42u)
-#define PIN_SPI0_MOSI       (43u)
+ * ⚠ Do not "helpfully" add it back. It previously read GPIO40-43, which are
+ * D40-D43 on J8 pads 5/6/8/9 -- mux control outputs driven by this board. An
+ * accidental SPI.begin() would have driven them. There is no free GPIO here to
+ * move it to; the correct answer is to have no SPI0 at all. */
 
 /* SPI1 defaults to the AD5940 pins, so the optional hardware-SPI switch (handoff
  * §4) needs no further pin plumbing. The board currently runs the BIT-BANG path
@@ -84,11 +78,13 @@
 #define PIN_WIRE0_SCL       (3u)
 
 /* I2C1 — NOT USED. Required to LINK, not merely to compile: Wire.cpp guards the
- * `TwoWire Wire1(...)` instantiation on PIN_WIRE1_* but its IRQ trampoline
+ * `TwoWire Wire1(...)` instantiation on PIN_WIRE1_*, but its IRQ trampoline
  * `_handler1()` references Wire1 unconditionally, so omitting the group gives
  * `undefined reference to Wire1` at link time rather than a clear diagnostic.
- * GPIO4/5 are free on V0p03 and are a valid I2C0 SDA/SCL pair. */
-#define PIN_WIRE1_SDA       (4u)
-#define PIN_WIRE1_SCL       (5u)
+ *
+ * ⚠ NOPIN, not "a free pair". This previously read GPIO4/5, which are D4/D5 on
+ * J8 pads 2/3 -- mux control outputs driven by this board, not spare pins. */
+#define PIN_WIRE1_SDA       (0xffu)   /* NOPIN */
+#define PIN_WIRE1_SCL       (0xffu)   /* NOPIN */
 
 #include "../generic/common.h"
